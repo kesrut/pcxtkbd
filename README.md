@@ -3,4 +3,4 @@ PCXTKBD
 
 PCXTKBD ADAPTER - WORK IN PROGRESS
 
-Please use add https://github.com/techpaul/PS2KeyAdvanced Arduino library.
+Please add https://github.com/techpaul/PS2KeyAdvanced Arduino library to compile.

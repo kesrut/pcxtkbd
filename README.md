@@ -1,6 +1,7 @@
 # pcxtkbd
-PCXTKBD
+PS/2 -> PC/XT Arduino based Keyboard adapter.
 
-PCXTKBD ADAPTER - WORK IN PROGRESS
+Stable version.
+
 
 Please add https://github.com/techpaul/PS2KeyAdvanced Arduino library to compile.

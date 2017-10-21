@@ -20,7 +20,8 @@ void setupTable () {
   translationTable[PS2_KEY_CAPS]=0x3A;
   translationTable[PS2_KEY_PAUSE]=0x5f;
   translationTable[PS2_KEY_L_SHIFT]=0x2A;
-  translationTable[PS2_KEY_R_SHIFT]=0x36;
+  translationTable[PS2_KEY_R_SHIFT]=0x36; 
+  translationTable[PS2_KEY_L_ALT] = 0x38 ; 
   translationTable[PS2_KEY_L_CTRL]=0x1D;
   translationTable[PS2_KEY_L_ARROW]=0x4B;
   translationTable[PS2_KEY_R_ARROW]=0x4D;
@@ -32,6 +33,7 @@ void setupTable () {
   translationTable[PS2_KEY_TAB]=0x0F;
   translationTable[PS2_KEY_ENTER]=0x1C;
   translationTable[PS2_KEY_SPACE]=0x39;
+  translationTable[PS2_KEY_SEMI] = 0x27 ;
   translationTable[PS2_KEY_KP0]=0x52;
   translationTable[PS2_KEY_KP1]=0x4F;
   translationTable[PS2_KEY_KP2]=0x50;
@@ -50,6 +52,7 @@ void setupTable () {
   translationTable[PS2_KEY_KP_MINUS]=0x4A;
   translationTable[PS2_KEY_KP_TIMES]=0x37; 
   translationTable[PS2_KEY_KP_DIV]=0x35; 
+  translationTable[PS2_KEY_KP_ENTER]=0x01; 
   translationTable[PS2_KEY_0]=0x0B;
   translationTable[PS2_KEY_1]=0x02;
   translationTable[PS2_KEY_2]=0x03;
@@ -60,14 +63,17 @@ void setupTable () {
   translationTable[PS2_KEY_7]=0x08;
   translationTable[PS2_KEY_8]=0x09;
   translationTable[PS2_KEY_9]=0x0A;
-  //translationTable[PS2_KEY_APOS]=0x28; 
+  translationTable[PS2_KEY_APOS]=0x28; 
   translationTable[PS2_KEY_COMMA]=0x33;
   translationTable[PS2_KEY_MINUS]=0x0C;
+  translationTable[PS2_KEY_SCROLL] = 0x46 ;
   translationTable[PS2_KEY_DOT]=0x34;
+  translationTable[PS2_KEY_BACK] =0x2B ;
+  translationTable[PS2_KEY_SINGLE] = 0x29 ;
   translationTable[PS2_KEY_DIV]=0x35;
   translationTable[PS2_KEY_SINGLE]=28;    
   translationTable[PS2_KEY_A]=0x1E;
-  translationTable[PS2_KEY_B]=0x39;
+  translationTable[PS2_KEY_B]=0x30;
   translationTable[PS2_KEY_C]=0x2E;
   translationTable[PS2_KEY_D]=0x20;
   translationTable[PS2_KEY_E]=0x12;
@@ -162,8 +168,8 @@ void loop()
 {
   if( keyboard.available() )
   {
-  // read the next key
   c = keyboard.read();
+  
   if( c > 0 )
     {
 #if defined(ARDUINO_ARCH_AVR)
@@ -181,16 +187,55 @@ void loop()
 #endif
     Serial.println( c & 0xFF, HEX );
     }
+
     if( !( c & PS2_BREAK ) ) 
   {
-    ascan = translationTable[c & 0xff];
-    _write(ascan ) ;
+    switch (c & 0xff)
+    {
+      case PS2_KEY_L_CTRL: _write(0xE0); _write(0x1D); break ;
+      case PS2_KEY_R_ALT: _write(0xE0); _write(0x38); break ;
+      case PS2_KEY_INSERT: _write(0xE0); _write(0x52); break ;
+      case PS2_KEY_HOME: _write(0xE0); _write(0x47); break ;
+      case PS2_KEY_END: _write(0xE0); _write(0x4F); break ;
+      case PS2_KEY_DN_ARROW: _write(0xE0); _write(0x50); break ;
+      case PS2_KEY_PGDN: _write(0xE0); _write(0x51); break ;
+      case PS2_KEY_L_ARROW: _write(0xE0); _write(0x4B); break ;
+      case PS2_KEY_R_ARROW: _write(0xE0); _write(0x4D); break ;
+      case PS2_KEY_UP_ARROW: _write(0xE0); _write(0x48); break ;
+      case PS2_KEY_PGUP: _write(0xE0); _write(0x49); break ;
+      case PS2_KEY_DELETE: _write(0xE0); _write(0x53); break ;      
+      default:
+      {
+      ascan = translationTable[c & 0xff];
+     _write(ascan) ; break ;
+      }
+    }
+    
   }
 
   if( ( c & PS2_BREAK ) ) 
   {
-     ascan = translationTable[c & 0xff];
-     _write(ascan | 0x80) ;
+    switch (c & 0xff)
+    {
+      case PS2_KEY_L_CTRL: _write(0xE0); _write(0x1D | 0x80); break ;
+      case PS2_KEY_R_ALT: _write(0xE0); _write(0x38 | 0x80); break ;
+      case PS2_KEY_INSERT: _write(0xE0); _write(0x52 | 0x80); break ;
+      case PS2_KEY_HOME: _write(0xE0); _write(0x47 | 0x80); break ;
+      case PS2_KEY_END: _write(0xE0); _write(0x4F | 0x80); break ;
+      case PS2_KEY_DN_ARROW: _write(0xE0); _write(0x50 | 0x80); break ;
+      case PS2_KEY_PGDN: _write(0xE0); _write(0x51 | 0x80); break ;
+      case PS2_KEY_L_ARROW: _write(0xE0); _write(0x4B | 0x80); break ;
+      case PS2_KEY_R_ARROW: _write(0xE0); _write(0x4D | 0x80); break ;
+      case PS2_KEY_UP_ARROW: _write(0xE0); _write(0x48 | 0x80); break ;
+      case PS2_KEY_PGUP: _write(0xE0); _write(0x49 | 0x80); break ;
+      case PS2_KEY_DELETE: _write(0xE0); _write(0x53 | 0x80); break ;   
+      default:
+      {
+        ascan = translationTable[c & 0xff];
+      _write(ascan | 0x80) ;
+      }
+    }
+   
   }
   }
   

@@ -93,7 +93,7 @@ void setupTable () {
   translationTable[PS2_KEY_S]=0x1F;
   translationTable[PS2_KEY_T]=0x14;
   translationTable[PS2_KEY_U]=0x16;
-  translationTable[PS2_KEY_V]=0x2E;
+  translationTable[PS2_KEY_V]=0x2F;
   translationTable[PS2_KEY_W]=0x11;
   translationTable[PS2_KEY_X]=0x2D;
   translationTable[PS2_KEY_Y]=0x15;

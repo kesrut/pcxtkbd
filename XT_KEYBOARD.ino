@@ -120,45 +120,48 @@ void setup()
 #ifdef DEBUG
   Serial.begin(9600) ; 
 #endif  
-  pinMode(xt_clk, OUTPUT) ; 
-  pinMode(xt_data, OUTPUT) ; 
-  digitalWrite(xt_clk, HIGH) ; 
-  digitalWrite(xt_data, HIGH) ; 
-}
+  pinMode(xt_clk, INPUT_PULLUP) ; 
+  digitalWrite(xt_data, LOW); //Turns out the inactive state of the KB DATA line should always be LOW, as HIGH will enter "Manufacturing mode" on an IBM XT, continuously toggling the CLK line at 9.1Hz.
+  pinMode(xt_data, OUTPUT);
+  }
 
 void _write(unsigned char value)
 { 
-   while (digitalRead(xt_clk) != HIGH) ; 
-   unsigned char bits[8] ;
-   byte p = 0 ; 
-   byte j = 0 ;
-   for (j=0 ; j < 8; j++)
-   {
-     if (value & 1) bits[j] = 1 ;
-     else bits[j] = 0 ; 
-     value = value >> 1 ; 
-   }
-   digitalWrite(xt_clk, LOW) ; 
-   digitalWrite(xt_data, HIGH) ; 
+ while (digitalRead(xt_clk) != HIGH);  //Wait here until host releases CLK
+
+  digitalWrite(xt_clk, LOW) ; //Pull it low before switching to output
+  pinMode(xt_clk, OUTPUT); //RTS
+  pinMode(xt_data, INPUT_PULLUP); //Let data go high
    delayMicroseconds(120) ; 
-   digitalWrite(xt_clk, HIGH) ; 
+  // while (digitalRead(xt_data) != HIGH); //We could wait here, we could cancel the data, we could do many things if we don't get a CTS but.. nah.
+   pinMode(xt_clk, INPUT_PULLUP); //Let clk go high for start bit
    delayMicroseconds(66) ;
    digitalWrite(xt_clk, LOW) ; 
+  pinMode(xt_clk, OUTPUT);
    delayMicroseconds(30) ;
-   digitalWrite(xt_clk, HIGH) ; 
    byte i = 0 ; 
    for (i=0; i < 8; i++)
    {
-      digitalWrite(xt_clk, HIGH) ; 
-      digitalWrite(xt_data, bits[p]) ; 
+    if (value & 1) {
+      pinMode(xt_data, INPUT_PULLUP); //Let data go high
+    } else {
+      digitalWrite(xt_data, LOW);
+      pinMode(xt_data, OUTPUT);
+    }
+    value = value >> 1;
+    //Spec says to have data available 2.5us before and after clock pulse.
+     pinMode(xt_clk, INPUT_PULLUP); //Let clk go high 
       delayMicroseconds(95) ;
-      digitalWrite(xt_clk, LOW) ;
-      digitalWrite(xt_data, LOW) ; 
-      p++ ; 
+      digitalWrite(xt_clk, LOW) ; 
+      pinMode(xt_clk, OUTPUT);
    } 
-   digitalWrite(xt_clk, HIGH) ; 
-   digitalWrite(xt_data, LOW) ;  
-   delay(1) ;
+   //Go to passive clk high, data low
+   delayMicroseconds(20) ;
+
+  pinMode(xt_clk, INPUT_PULLUP); //Let clk go high 
+  digitalWrite(xt_data, LOW) ;  //Keep data inactive low
+  pinMode(xt_data, OUTPUT);
+ delay(1) ;
 }
 
 byte i = 0 ;
@@ -166,7 +169,7 @@ unsigned char ascan;
 
 void loop() 
 {
-  if( keyboard.available() )
+  if( keyboard.available())
   {
   c = keyboard.read();
   
@@ -210,7 +213,6 @@ void loop()
      _write(ascan) ; break ;
       }
     }
-    
   }
 
   if( ( c & PS2_BREAK ) ) 
@@ -235,13 +237,13 @@ void loop()
       _write(ascan | 0x80) ;
       }
     }
-   
   }
   }
-  
+
   if (digitalRead(xt_clk) == LOW) // power-on self test
   {
-    delay(10) ;
-    _write(0xAA) ;
+    delay(10);
+      _write(0xAA) ; 
+      while ( keyboard.available()) keyboard.read(); //Discard buffer on reset
   }
 }
